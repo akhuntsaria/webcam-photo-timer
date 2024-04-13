@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Webcam photo with a timer</title>
+</head>
+
+<body>
+    <h1>Webcam photo with a timer</h1>
+    <p>
+        <input id="timer-input" type="number" value="3" style="max-width: 50px" tabindex="0">s
+        <button type="button" tabindex="1" onclick="action()" autofocus>Lights, camera, action</button>
+        <span id="timer-left" style="color: red"></span>
+    </p>
+    <video id="video"></video>
+    <script>
+        const video = document.getElementById('video');
+
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+            .then(function (stream) {
+                video.srcObject = stream;
+                video.play();
+            });
+        
+        function action() {
+            let left = document.getElementById("timer-input").value;
+            const leftEl = document.getElementById("timer-left");
+            leftEl.innerHTML = `In ${left}s`;
+            let intervalId = setInterval(() => {
+                left--;
+                if (left <= 0) {
+                    download();
+                    clearInterval(intervalId);
+                    leftEl.innerHTML = "";
+                    return;
+                }
+                leftEl.innerHTML = `In ${left}s`;
+            }, 1000);
+            
+        }
+
+        function download() {
+            const canvas = document.createElement('canvas');
+            canvas.width  = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+
+            const dataUrl = canvas.toDataURL('image/png');
+
+            const link = document.createElement("a");
+            link.download = `webcam-${+new Date()}.png`;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            delete link;
+        }
+    </script>
+</body>
+</html>
